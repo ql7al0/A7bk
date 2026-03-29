@@ -1,0 +1,55 @@
+-- [[ SAADHUB V2 - NO EXPLOSION + WHITE BOMB + FPS BOOST ]] --
+
+local function startUltraBoost()
+    -- 1. وظيفة حذف الانفجارات واللاق فوراً
+    local function clean(v)
+        -- منع انفجار القنبلة (Remove Explosion)
+        if v:IsA("Explosion") then
+            v.Visible = false
+            v.BlastRadius = 0
+            v.BlastPressure = 0
+            task.wait()
+            v:Destroy() -- حذف نهائي
+        end
+
+        -- حماية اللاعبين وملامح وجيههم
+        if v:IsDescendantOf(game.Players) or (v.Parent and v.Parent:FindFirstChild("Humanoid")) then
+            return 
+        end
+
+        -- تخفيف اللاق للماب وتبييض القنابل
+        if v:IsA("BasePart") then
+            v.Material = Enum.Material.SmoothPlastic
+            v.CastShadow = false
+            -- لو القطعة سودة (قنبلة) يقلبها أبيض
+            if v.Color.r < 0.2 and v.Color.g < 0.2 and v.Color.b < 0.2 then
+                v.Color = Color3.fromRGB(255, 255, 255)
+            end
+        elseif v:IsA("Decal") or v:IsA("Texture") then
+            if v.Name ~= "face" then v:Destroy() end
+        elseif v:IsA("ParticleEmitter") or v:IsA("Trail") or v:IsA("Fire") or v:IsA("Smoke") then
+            v:Destroy() -- حذف أي دخان يسبب لاق
+        end
+    end
+
+    -- تنظيف كل شيء موجود حالياً
+    for _, v in pairs(game.Workspace:GetDescendants()) do
+        pcall(clean, v)
+    end
+
+    -- مراقبة أي قنبلة أو انفجار جديد (عشان يحذفه فوراً)
+    game.Workspace.DescendantAdded:Connect(function(v)
+        pcall(clean, v)
+    end)
+end
+
+-- تشغيل النظام
+pcall(startUltraBoost)
+
+-- إشعار التشغيل
+game:GetService("StarterGui"):SetCore("SendNotification", {
+    Title = "SAADHUB OFFICIAL",
+    Text = "Explosion Removed & White Bomb ✅",
+    Duration = 5
+})
+
