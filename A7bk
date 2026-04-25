@@ -1,4 +1,4 @@
--- [[ SAADHUB V2 - NO EXPLOSION + WHITE BOMB + FPS BOOST ]] --
+
 
 local function startUltraBoost()
     -- 1. وظيفة حذف الانفجارات واللاق فوراً
