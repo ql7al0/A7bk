@@ -1,6 +1,19 @@
-
-
 local function startUltraBoost()
+    -- [الإضافات الجديدة: إخفاء الشمس، خفض الإضاءة، وزيادة الفريمات]
+    local Lighting = game:GetService("Lighting")
+    Lighting.GlobalShadows = false -- إلغاء الظلال لزيادة الفريمات
+    Lighting.Brightness = 0.5 -- خفض قوة النور ليريح العين
+    
+    -- حذف تأثيرات الشمس والإضاءة الزائدة لتحسين الأداء
+    for _, effect in pairs(Lighting:GetChildren()) do
+        if effect:IsA("Sky") then
+            effect.SunTextureId = "" -- إخفاء صورة الشمس
+            effect.SunAngularSize = 0
+        elseif effect:IsA("PostEffect") or effect:IsA("SunRaysEffect") or effect:IsA("BloomEffect") or effect:IsA("BlurEffect") then
+            effect.Enabled = false -- تعطيل التأثيرات لزيادة الفريمات
+        end
+    end
+
     -- 1. وظيفة حذف الانفجارات واللاق فوراً
     local function clean(v)
         -- منع انفجار القنبلة (Remove Explosion)
@@ -49,7 +62,6 @@ pcall(startUltraBoost)
 -- إشعار التشغيل
 game:GetService("StarterGui"):SetCore("SendNotification", {
     Title = "SAADHUB OFFICIAL",
-    Text = "Explosion Removed & White Bomb ✅",
+    Text = "FPS Boosted, No Sun & Explosion Removed ✅",
     Duration = 5
 })
-
