@@ -1,14 +1,6 @@
--- [[ SAADHUB V3 - ULTRA FPS BOOST + SMART AIM ASSIST + FASTFLAGS ]] --
+-- [[ SAADHUB V3 - ULTRA FPS BOOST + FASTFLAGS ]] --
 
--- 1. إعدادات مساعد الإيم (Aim Assist Configuration)
-local AimSettings = {
-    Enabled = true,
-    Key = Enum.UserInputType.MouseButton2, -- الزر الأيمن للفأرة لتفعيل الآيم
-    Smoothness = 0.15, -- درجة السلاسة (كلما قل الرقم كان الإيم أسرع وأقوى، 0.15 آمن وطبيعي جداً)
-    TargetPart = "Head" -- مكان التصويب (Head للرأس، أو HumanoidRootPart للجسم)
-}
-
--- 2. قائمة الـ FastFlags الخاصة بك (تطبيق كامل)
+-- 1. قائمة الـ FastFlags الخاصة بك (تطبيق كامل)
 local FastFlags = {
     ["FFlagDebugGraphicsPreferD3D11"] = "True",
     ["DFIntTaskSchedulerTargetFps"] = "9999999",
@@ -368,7 +360,7 @@ for flag, value in pairs(FastFlags) do
     end)
 end
 
--- 3. تشغيل نظام الـ Ultra Boost ومسح اللاق
+-- 2. تشغيل نظام الـ Ultra Boost ومسح اللاق
 local function startUltraBoost()
     local function clean(v)
         -- منع انفجار القنبلة وحذفه فوراً
@@ -409,70 +401,12 @@ local function startUltraBoost()
     end)
 end
 
--- 4. نظام مساعد الإيم الذكي والسلس (Legit Aim Assist)
-local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
-local Camera = game:GetService("Workspace").CurrentCamera
-local UserInputService = game:GetService("UserInputService")
-local RunService = game:GetService("RunService")
-
-local IsHolding = false
-
--- دالة للبحث عن أقرب لاعب لشاشة الماوس وحي
-local function getClosestPlayer()
-    local closestPlayer = nil
-    local shortestDistance = math.huge
-
-    for _, player in pairs(Players:GetPlayers()) do
-        if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild(AimSettings.TargetPart) then
-            local humanoid = player.Character:FindFirstChildOfClass("Humanoid")
-            if humanoid and humanoid.Health > 0 then
-                local pos, onScreen = Camera:WorldToViewportPoint(player.Character[AimSettings.TargetPart].Position)
-                if onScreen then
-                    local mousePos = UserInputService:GetMouseLocation()
-                    local distance = (Vector2.new(pos.X, pos.Y) - mousePos).Magnitude
-                    if distance < shortestDistance then
-                        closestPlayer = player
-                        shortestDistance = distance
-                    end
-                end
-            end
-        end
-    end
-    return closestPlayer
-end
-
--- رصد ضغط الزر لتفعيل الآيم
-UserInputService.InputBegan:Connect(function(input)
-    if input.UserInputType == AimSettings.Key then
-        IsHolding = true
-    end
-end)
-
-UserInputService.InputEnded:Connect(function(input)
-    if input.UserInputType == AimSettings.Key then
-        IsHolding = false
-    end
-end)
-
--- تحديث حركة الكاميرا بسلاسة تامة لتجنب الباند
-RunService.RenderStepped:Connect(function()
-    if IsHolding and AimSettings.Enabled then
-        local target = getClosestPlayer()
-        if target and target.Character and target.Character:FindFirstChild(AimSettings.TargetPart) then
-            local targetPos = target.Character[AimSettings.TargetPart].Position
-            -- حركة ناعمة جداً (Lerp) تجعل التصويب يبدو طبيعياً تماماً وبدون اهتزاز مفاجئ
-            Camera.CFrame = Camera.CFrame:Lerp(CFrame.lookAt(Camera.CFrame.Position, targetPos), AimSettings.Smoothness)
-        end
-    end
-end)
-
 -- تشغيل الأوامر
 pcall(startUltraBoost)
 
--- إشعار التشغيل الناجح للسكربت المطور
+-- إشعار التشغيل الناجح للسكربت (تم تعديل النص ليتناسب مع إزالة الإيم بوت)
 game:GetService("StarterGui"):SetCore("SendNotification", {
     Title = "SAADHUB V3 OFFICIAL",
-    Text = "Flags Applied & Legit Aim Assist Active! ✅",
+    Text = "Flags & FPS Boost Applied Successfully! ✅",
     Duration = 6
 })
