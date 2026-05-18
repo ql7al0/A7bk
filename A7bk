@@ -1,7 +1,7 @@
--- [[ SAADHUB V3 - ULTRA FPS BOOST + FASTFLAGS ]] --
+-- [[ SAADHUB V2 - ULTRA FPS BOOST + NO EXPLOSION + WHITE BOMB ]] --
 
--- 1. قائمة الـ FastFlags الخاصة بك (تطبيق كامل)
-local FastFlags = {
+-- 1. دمج إعدادات الفريمات (FFlags)
+local FFlags = {
     ["FFlagDebugGraphicsPreferD3D11"] = "True",
     ["DFIntTaskSchedulerTargetFps"] = "9999999",
     ["FFlagDebugSkyGray"] = "True",
@@ -233,6 +233,8 @@ local FastFlags = {
     ["FIntRenderGrassDetailStrands"] = "0",
     ["FIntRenderGrassHeightScaler"] = "0",
     ["FIntNewInGameMenuPercentRollout3"] = "10000",
+    ["FStringPartTexturePackTable2022"] = '{"glass":{"ids":["rbxassetid://9873284556","rbxassetid://9438453972"],"color":[254,254,254,7]}}',
+    ["FStringPartTexturePackTablePre2022"] = '{"glass":{"ids":["rbxassetid://7547304948","rbxassetid://7546645118"],"color":[254,254,254,7]}}',
     ["FIntScrollWheelDeltaAmount"] = "140",
     ["FFlagDebugDisableTelemetryEphemeralCounter"] = "True",
     ["FFlagDebugDisableTelemetryEphemeralStat"] = "True",
@@ -351,19 +353,20 @@ local FastFlags = {
     ["FFlagDisableNewIGMinDUA"] = "True"
 }
 
--- تطبيق الـ FastFlags برمجياً عبر المحقن
-for flag, value in pairs(FastFlags) do
+-- تطبيق الفلاقات بأمان (لن يتم التنفيذ إذا كان المشغل لا يدعم setfflag لتجنب الباند)
+for flag, value in pairs(FFlags) do
     pcall(function()
         if setfflag then
-            setfflag(flag, value)
+            setfflag(flag, tostring(value))
         end
     end)
 end
 
--- 2. تشغيل نظام الـ Ultra Boost ومسح اللاق
+-- 2. وظيفة حذف الانفجارات وتقليل اللاق (السكربت الخاص بك)
 local function startUltraBoost()
+    -- وظيفة التنظيف السريع
     local function clean(v)
-        -- منع انفجار القنبلة وحذفه فوراً
+        -- منع انفجار القنبلة وحذفها فوراً (Remove Explosion)
         if v:IsA("Explosion") then
             v.Visible = false
             v.BlastRadius = 0
@@ -372,41 +375,43 @@ local function startUltraBoost()
             v:Destroy()
         end
 
-        -- حماية ملامح وجوه اللاعبين وشخصياتهم من الحذف
+        -- حماية اللاعبين وملامح وجوههم
         if v:IsDescendantOf(game.Players) or (v.Parent and v.Parent:FindFirstChild("Humanoid")) then
             return 
         end
 
-        -- تخفيف لاق الماب وتبييض القنابل
+        -- تخفيف اللاق للماب وتبييض القنابل
         if v:IsA("BasePart") then
             v.Material = Enum.Material.SmoothPlastic
             v.CastShadow = false
-            -- إذا كانت القطعة سوداء (مثل القنبلة) يقلب لونها أبيض
+            -- لو القطعة سودة (مثل القنبلة) يقلبها أبيض
             if v.Color.r < 0.2 and v.Color.g < 0.2 and v.Color.b < 0.2 then
                 v.Color = Color3.fromRGB(255, 255, 255)
             end
         elseif v:IsA("Decal") or v:IsA("Texture") then
             if v.Name ~= "face" then v:Destroy() end
         elseif v:IsA("ParticleEmitter") or v:IsA("Trail") or v:IsA("Fire") or v:IsA("Smoke") then
-            v:Destroy() -- حذف التأثيرات المسببة لثقل الفريمات
+            v:Destroy() -- حذف أي مؤثرات تسبب لاق
         end
     end
 
+    -- تنظيف كل شيء موجود حالياً بالماب
     for _, v in pairs(game.Workspace:GetDescendants()) do
         pcall(clean, v)
     end
 
+    -- مراقبة أي شيء جديد ينزل (قنبلة، انفجار، الخ) عشان يحذفه أو ينظفه فوراً
     game.Workspace.DescendantAdded:Connect(function(v)
         pcall(clean, v)
     end)
 end
 
--- تشغيل الأوامر
+-- تشغيل النظام بأمان
 pcall(startUltraBoost)
 
--- إشعار التشغيل الناجح للسكربت (تم تعديل النص ليتناسب مع إزالة الإيم بوت)
+-- إشعار التشغيل
 game:GetService("StarterGui"):SetCore("SendNotification", {
-    Title = "SAADHUB V3 OFFICIAL",
-    Text = "Flags & FPS Boost Applied Successfully! ✅",
-    Duration = 6
+    Title = "SAADHUB OFFICIAL",
+    Text = "Max FPS Boost & White Bomb Enabled ✅",
+    Duration = 5
 })
