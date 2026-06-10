@@ -1,4 +1,4 @@
--- [[ SAADHUB OFFICIAL - FULL VERSION V102 (MODIFIED: CLICK TO TOGGLE + 3.5-4.5 JITTER) ]] --
+-- [[ SAADHUB OFFICIAL - FULL VERSION V102 (MODIFIED: CLICK TO TOGGLE + 2.5-3.5 JITTER) ]] --
 
 local player = game.Players.LocalPlayer
 local httpService = game:GetService("HttpService")
@@ -87,6 +87,7 @@ end
 -- [[ 6. منطق الالتصاق واللمس السريع ]] --
 local active = true
 local lockedTarget = nil
+local isBotMoving = false -- متغير جديد عشان نوقف اللاعب بشكل طبيعي بدون ما يتزحلق
 
 local function fastTouch(targetChar, tool)
     local handle = tool:FindFirstChild("Handle") or tool:FindFirstChildOfClass("Part")
@@ -108,7 +109,10 @@ local function toggleScript()
     active = not active
     toggle.Text = active and "SAADHUB: ON" or "SAADHUB: OFF"
     toggle.BackgroundColor3 = active and Color3.fromRGB(170, 0, 0) or Color3.fromRGB(40, 40, 40)
-    if not active then lockedTarget = nil end
+    if not active then 
+        lockedTarget = nil 
+        isBotMoving = false 
+    end
 end
 
 -- تفعيل/إيقاف عن طريق كليك الماوس اليسار
@@ -123,16 +127,10 @@ toggle.MouseButton1Click:Connect(toggleScript)
 
 runService.RenderStepped:Connect(function()
     if active and player.Character and player.Character:FindFirstChild("Humanoid") then
-        -- الفحص الذكي: للتأكد من عدم تجميد حركة اللاعب أو منع الضغط على القنابل
-        local tool = player.Character:FindFirstChildOfClass("Tool")
-        if not tool then
-            local bpTool = player.Backpack:FindFirstChildOfClass("Tool")
-            if bpTool then 
-                player.Character.Humanoid:EquipTool(bpTool) 
-                tool = bpTool
-            end
-        end
+        local bpTool = player.Backpack:FindFirstChildOfClass("Tool")
+        if bpTool then player.Character.Humanoid:EquipTool(bpTool) end
 
+        local tool = player.Character:FindFirstChildOfClass("Tool")
         if tool then
             local targetPlr = lockedTarget and game.Players:GetPlayerFromCharacter(lockedTarget)
             if not lockedTarget or not lockedTarget.Parent or lockedTarget.Humanoid.Health <= 0 or (targetPlr and not isEnemy(targetPlr)) then
@@ -150,15 +148,26 @@ runService.RenderStepped:Connect(function()
                 local myRoot = player.Character.HumanoidRootPart
                 local dist = (targetRoot.Position - myRoot.Position).Magnitude
                 
-                -- [[ ميزة التذبذب الذكي المطلوبة: بين 3.5 و 4.5 ]] --
-                local smartOffset = math.random(35, 45) / 10 
+                -- [[ ميزة التذبذب الذكي المطلوبة: بين 2.5 و 3.5 ]] --
+                local smartOffset = math.random(25, 35) / 10 
                 
                 if dist > smartOffset then
+                    -- يتحرك للخصم من نفس جهته الحالية
                     player.Character.Humanoid:Move((targetRoot.Position - myRoot.Position).Unit, false) 
+                    isBotMoving = true
+                else
+                    -- الحل هنا: أول ما يوصل للمسافة، يوقف فوراً بمكانه من أي جهة (ما يلف ظهره ولا يتزحلق)
+                    if isBotMoving then
+                        player.Character.Humanoid:Move(Vector3.new(0, 0, 0), false)
+                        isBotMoving = false
+                    end
                 end
 
                 fastTouch(lockedTarget, tool)
             end
-        else lockedTarget = nil end
+        else 
+            lockedTarget = nil 
+            isBotMoving = false
+        end
     end
 end)
