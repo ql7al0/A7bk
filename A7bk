@@ -1,4 +1,4 @@
--- [[ SAADHUB OFFICIAL - FULL VERSION V102 (MODIFIED: CLICK TO TOGGLE + 2.5-3.5 JITTER + NORMAL MODE FIX) ]] --
+-- [[ SAADHUB OFFICIAL - FULL VERSION V102 (MODIFIED: CLICK TO TOGGLE + SMOOTH CHASE + NORMAL MODE FIX) ]] --
 
 local player = game.Players.LocalPlayer
 local httpService = game:GetService("HttpService")
@@ -58,7 +58,6 @@ Instance.new("UIStroke", toggle).Color = Color3.new(1, 1, 1)
 
 local dragCircle = Instance.new("Frame", toggle)
 dragCircle.Size = UDim2.new(0, 25, 0, 25); dragCircle.Position = UDim2.new(0.5, -12.5, 0, -32)
--- تم تعديل الشفافية هنا لجعلها مخفية بالكامل مع بقاء ميزة السحب
 dragCircle.BackgroundColor3 = Color3.new(1, 1, 1); dragCircle.BackgroundTransparency = 1; Instance.new("UICorner", dragCircle).CornerRadius = UDim.new(1, 0)
 local dragStroke = Instance.new("UIStroke", dragCircle); dragStroke.Thickness = 1.2; dragStroke.Transparency = 1
 
@@ -76,16 +75,13 @@ userInputService.InputChanged:Connect(function(input)
 end)
 userInputService.InputEnded:Connect(function() dragging = false end)
 
--- [[ 5. فحص الفريق (تم تعديله ليعمل في طور Normal) ]] --
+-- [[ 5. فحص الفريق ]] --
 local function isEnemy(v)
     if not v or v == player or not v.Character then return false end
-    
     local hl = v.Character:FindFirstChildOfClass("Highlight")
     if hl and (hl.FillColor.G > hl.FillColor.R) then return false end
-    
     -- تم إيقاف فحص الفريق لكي يعمل السكربت ويستهدف الجميع في طور الـ Normal
     -- if player.Team ~= nil and v.Team ~= nil and player.Team == v.Team then return false end
-    
     return true 
 end
 
@@ -116,14 +112,12 @@ local function toggleScript()
     if not active then lockedTarget = nil end
 end
 
--- تفعيل/إيقاف عن طريق كليك الماوس اليسار
 userInputService.InputBegan:Connect(function(input, gameProcessed)
     if not gameProcessed and input.UserInputType == Enum.UserInputType.MouseButton1 then
         toggleScript()
     end
 end)
 
--- الزر اليدوي أيضاً يعمل
 toggle.MouseButton1Click:Connect(toggleScript)
 
 runService.RenderStepped:Connect(function()
@@ -149,11 +143,12 @@ runService.RenderStepped:Connect(function()
                 local myRoot = player.Character.HumanoidRootPart
                 local dist = (targetRoot.Position - myRoot.Position).Magnitude
                 
-                -- [[ ميزة التذبذب الذكي المطلوبة: بين 2.5 و 3.5 ]] --
-                local smartOffset = math.random(25, 35) / 10 
-                
-                if dist > smartOffset then
+                -- حل مشكلة التقطيع (Stuttering): اللحاق السلس بدون توقف عشوائي
+                if dist > 2.5 then
                     player.Character.Humanoid:Move((targetRoot.Position - myRoot.Position).Unit, false) 
+                else
+                    -- إيقاف الحركة عند الوصول للمسافة المطلوبة عشان الضربة تتسجل صح
+                    player.Character.Humanoid:Move(Vector3.new(0, 0, 0), false)
                 end
 
                 fastTouch(lockedTarget, tool)
