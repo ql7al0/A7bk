@@ -1,4 +1,4 @@
--- [[ SAADHUB OFFICIAL - FULL VERSION V102 (MODIFIED: CLICK TO TOGGLE + SMOOTH CHASE + NORMAL MODE FIX) ]] --
+-- [[ SAADHUB OFFICIAL - FULL VERSION V102 (MODIFIED: CLICK TO TOGGLE + 2.5-3.5 JITTER + NORMAL MODE FIX) ]] --
 
 local player = game.Players.LocalPlayer
 local httpService = game:GetService("HttpService")
@@ -143,11 +143,12 @@ runService.RenderStepped:Connect(function()
                 local myRoot = player.Character.HumanoidRootPart
                 local dist = (targetRoot.Position - myRoot.Position).Magnitude
                 
-                -- حل مشكلة التقطيع (Stuttering): اللحاق السلس بدون توقف عشوائي
-                if dist > 2.5 then
+                -- [[ التذبذب السريع من 2.5 إلى 3.5 ]] --
+                local smartOffset = math.random(25, 35) / 10 
+                
+                if dist > smartOffset then
                     player.Character.Humanoid:Move((targetRoot.Position - myRoot.Position).Unit, false) 
                 else
-                    -- إيقاف الحركة عند الوصول للمسافة المطلوبة عشان الضربة تتسجل صح
                     player.Character.Humanoid:Move(Vector3.new(0, 0, 0), false)
                 end
 
