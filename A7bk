@@ -1,31 +1,25 @@
--- سكربت البحث عن أيقونة المنصة وتغييرها في الـ UI
+-- سكربت تعديل الأيقونة التي فوق رأس الشخصية (على شاشتك فقط)
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 
--- معرّف صورة أيقونة الكونسول / السوني (يمكنك استبداله بأي Asset ID)
-local CONSOLE_ICON_ID = "rbxassetid://13192080031" 
+-- استبدل هذا الرقم بـ Asset ID لأيقونة السوني أو الكونسول التي تريدها
+local NEW_ICON = "rbxassetid://13192080031" 
 
-local function fixPlatformIcon()
-    local playerGui = LocalPlayer:FindFirstChildOfClass("PlayerGui")
-    if not playerGui then return end
+local function updateCharacterIcon()
+    local character = LocalPlayer.Character
+    if not character then return end
 
-    -- البحث عن كل أداة عرض صور داخل واجهات اللعبة
-    for _, guiObject in pairs(playerGui:GetDescendants()) do
-        if guiObject:IsA("ImageLabel") or guiObject:IsA("ImageButton") then
-            -- إذا كانت الصورة الحالية هي صورة الكمبيوتر بناءً على الاسم أو الرابط
-            if guiObject.Name:lower():find("platform") 
-            or guiObject.Name:lower():find("device") 
-            or guiObject.Name:lower():find("pc") 
-            or guiObject.Image:find("pc") then
-                guiObject.Image = CONSOLE_ICON_ID
-            end
+    -- البحث داخل مجسم الشخصية والرأس عن أي BillboardGui أو واجهة أسماء
+    for _, gui in pairs(character:GetDescendants()) do
+        if gui:IsA("ImageLabel") or gui:IsA("ImageButton") then
+            -- تغيير أي صورة موجودة فوق الشخصية إلى أيقونة الكونسول
+            gui.Image = NEW_ICON
         end
     end
 end
 
--- تشغيل الفحص وتحديثه باستمرار عند تغير الواجهة
 task.spawn(function()
-    while task.wait(1) do
-        pcall(fixPlatformIcon)
+    while task.wait(0.5) do
+        pcall(updateCharacterIcon)
     end
 end)
