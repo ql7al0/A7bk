@@ -1,36 +1,31 @@
--- سكربت تغيير المنصة إلى PlayStation (Sony)
-local UserInputService = game:GetService("UserInputService")
-local GuiService = game:GetService("GuiService")
+-- سكربت البحث عن أيقونة المنصة وتغييرها في الـ UI
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
 
-local rawmeta = getrawmetatable(game)
-local oldNamecall = rawmeta.__namecall
-local oldIndex = rawmeta.__index
+-- معرّف صورة أيقونة الكونسول / السوني (يمكنك استبداله بأي Asset ID)
+local CONSOLE_ICON_ID = "rbxassetid://13192080031" 
 
-setreadonly(rawmeta, false)
+local function fixPlatformIcon()
+    local playerGui = LocalPlayer:FindFirstChildOfClass("PlayerGui")
+    if not playerGui then return end
 
--- تزييف الدوال التي تستدعيها الألعاب للتحقق من الجهاز
-rawmeta.__namecall = newcclosure(function(self, ...)
-    local method = getnamecallmethod()
-    
-    if self == UserInputService then
-        if method == "GetPlatform" then
-            return Enum.Platform.PS4 -- يمكن تغييرها إلى Enum.Platform.PS5
-        end
-    elseif self == GuiService then
-        if method == "IsTenFootInterface" then
-            return true -- تفعيل واجهة الكونسول
+    -- البحث عن كل أداة عرض صور داخل واجهات اللعبة
+    for _, guiObject in pairs(playerGui:GetDescendants()) do
+        if guiObject:IsA("ImageLabel") or guiObject:IsA("ImageButton") then
+            -- إذا كانت الصورة الحالية هي صورة الكمبيوتر بناءً على الاسم أو الرابط
+            if guiObject.Name:lower():find("platform") 
+            or guiObject.Name:lower():find("device") 
+            or guiObject.Name:lower():find("pc") 
+            or guiObject.Image:find("pc") then
+                guiObject.Image = CONSOLE_ICON_ID
+            end
         end
     end
-    
-    return oldNamecall(self, ...)
-end)
+end
 
--- تزييف خصائص يد التحكم
-rawmeta.__index = newcclosure(function(self, key)
-    if self == UserInputService and key == "GamepadEnabled" then
-        return true
+-- تشغيل الفحص وتحديثه باستمرار عند تغير الواجهة
+task.spawn(function()
+    while task.wait(1) do
+        pcall(fixPlatformIcon)
     end
-    return oldIndex(self, key)
 end)
-
-setreadonly(rawmeta, true)
