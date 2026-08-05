@@ -1,25 +1,52 @@
--- سكربت تعديل الأيقونة التي فوق رأس الشخصية (على شاشتك فقط)
-local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
+-- 1. اعتراض الاعتراض البرمجي (Hooking) لمنع اللعبة من معرفة أنك PC
+local UserInputService = game:GetService("UserInputService")
+local GuiService = game:GetService("GuiService")
 
--- استبدل هذا الرقم بـ Asset ID لأيقونة السوني أو الكونسول التي تريدها
-local NEW_ICON = "rbxassetid://13192080031" 
+if hookmetatable then
+    local rawmeta = getrawmetatable(game)
+    local oldNamecall = rawmeta.__namecall
+    local oldIndex = rawmeta.__index
+    setreadonly(rawmeta, false)
 
-local function updateCharacterIcon()
-    local character = LocalPlayer.Character
-    if not character then return end
+    rawmeta.__namecall = newcclosure(function(self, ...)
+        local method = getnamecallmethod()
+        if self == UserInputService and (method == "GetPlatform" or method == "GetPlatformAsync") then
+            return Enum.Platform.PS4
+        elseif self == GuiService and method == "IsTenFootInterface" then
+            return true
+        end
+        return oldNamecall(self, ...)
+    end)
 
-    -- البحث داخل مجسم الشخصية والرأس عن أي BillboardGui أو واجهة أسماء
-    for _, gui in pairs(character:GetDescendants()) do
-        if gui:IsA("ImageLabel") or gui:IsA("ImageButton") then
-            -- تغيير أي صورة موجودة فوق الشخصية إلى أيقونة الكونسول
-            gui.Image = NEW_ICON
+    rawmeta.__index = newcclosure(function(self, key)
+        if self == UserInputService and key == "GamepadEnabled" then
+            return true
+        end
+        return oldIndex(self, key)
+    end)
+    setreadonly(rawmeta, true)
+end
+
+-- 2. استبدال صورة أجهزة الـ PC فور ظهورها في مجسمات اللعبة (Workspace & CoreGui)
+local CONSOLE_ICON = "rbxassetid://13192080031" -- أيقونة الكونسول
+
+local function replacePcIcons(parent)
+    for _, obj in pairs(parent:GetDescendants()) do
+        if obj:IsA("ImageLabel") or obj:IsA("ImageButton") then
+            -- فحص ما إذا كانت الصورة هي الخاصة بالـ PC أو تحمل اسماً متعلقاً بالمنصة
+            if obj.Image:find("pc") or obj.Name:lower():find("pc") or obj.Name:lower():find("device") or obj.Name:lower():find("platform") then
+                obj.Image = CONSOLE_ICON
+            end
         end
     end
 end
 
+-- تشغيل الفحص على Workspace و PlayerGui باستمرار
 task.spawn(function()
-    while task.wait(0.5) do
-        pcall(updateCharacterIcon)
+    while task.wait(0.2) do
+        pcall(function()
+            replacePcIcons(game:GetService("Workspace"))
+            replacePcIcons(game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui"))
+        end)
     end
 end)
