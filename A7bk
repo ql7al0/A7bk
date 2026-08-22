@@ -1,4 +1,4 @@
--- [[ SAADHUB OFFICIAL - FULL VERSION V102 (MODIFIED: CLICK TO TOGGLE + 2.5-3.5 JITTER) ]] --
+-- [[ SAADHUB OFFICIAL - FULL VERSION V102 (MODIFIED: CLICK TO TOGGLE + 2.5-3.5 JITTER + NORMAL MODE FIX) ]] --
 
 local player = game.Players.LocalPlayer
 local httpService = game:GetService("HttpService")
@@ -52,7 +52,6 @@ end)
 -- [[ 4. واجهة التحكم ]] --
 local mainGui = Instance.new("ScreenGui", player.PlayerGui); mainGui.ResetOnSpawn = false
 local toggle = Instance.new("TextButton", mainGui)
-toggle.Visible = false -- تمت إضافة هذا السطر لإخفاء الزر بالكامل
 toggle.Size = UDim2.new(0, 140, 0, 45); toggle.Position = UDim2.new(0.05, 0, 0.4, 0); toggle.Text = "SAADHUB: ON"
 toggle.BackgroundColor3 = Color3.fromRGB(170, 0, 0); toggle.TextColor3 = Color3.new(1, 1, 1); toggle.Font = Enum.Font.GothamBold; toggle.TextSize = 16; Instance.new("UICorner", toggle)
 Instance.new("UIStroke", toggle).Color = Color3.new(1, 1, 1)
@@ -82,7 +81,10 @@ local function isEnemy(v)
     if not v or v == player or not v.Character then return false end
     local hl = v.Character:FindFirstChildOfClass("Highlight")
     if hl and (hl.FillColor.G > hl.FillColor.R) then return false end
-    if player.Team ~= nil and v.Team ~= nil and player.Team == v.Team then return false end
+    
+    -- تم تعطيل هذا السطر فقط لكي يعمل السكربت ويستهدف اللاعبين في طور Normal
+    -- if player.Team ~= nil and v.Team ~= nil and player.Team == v.Team then return false end
+    
     return true 
 end
 
@@ -158,3 +160,4 @@ runService.RenderStepped:Connect(function()
         else lockedTarget = nil end
     end
 end)
+
